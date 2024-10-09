@@ -31,6 +31,7 @@ public class DiaryController {
         if(body.length()>=30){
            throw new IllegalArgumentException("한 줄 일기는 30자 이상이어야 합니다.");
         }
+        // IllegalArgumentException 는 매개변수가 잘못되었을 때 발생하는 예외로 사용자가 입력한 값이 잘못된 상황이기에 사용함
        diaryService.writeDiary(body);
     }
 
@@ -42,7 +43,13 @@ public class DiaryController {
     }
 
     final void patch(final String id, final String body) {
-
+        if (!id.trim().matches("\\d+")) {
+            throw new IllegalArgumentException("ID는 숫자만 포함해야 합니다.");
+        };
+        if(body.length()>=30){
+            throw new IllegalArgumentException("한 줄 일기는 30자 이상이어야 합니다.");
+        }
+        diaryService.patchDiary(Long.parseLong(id),body);
     }
 
     enum Status {

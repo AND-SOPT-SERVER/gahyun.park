@@ -54,7 +54,11 @@ public class DiaryRepository {
         return diaryList;
     }
 
-
-
-
+    final void patch(final long id, final String body){
+        if (storage.containsKey(id)) {
+        storage.put(id,body);}
+        else{
+            throw new IllegalArgumentException("아이디가 존재하지 않습니다");
+        }
+    }
 }
