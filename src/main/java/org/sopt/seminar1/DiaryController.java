@@ -28,7 +28,10 @@ public class DiaryController {
     final void post(final String body) {
         // 원래 사용자에서 온 값이 적절한 값인지 처리하는 역할도 함
         // body 30자보다 크면 예외처리
-        diaryService.writeDiary(body);
+        if(body.length()>=30){
+           throw new IllegalArgumentException();
+        }
+       diaryService.writeDiary(body);
     }
 
     final void delete(final String id) {

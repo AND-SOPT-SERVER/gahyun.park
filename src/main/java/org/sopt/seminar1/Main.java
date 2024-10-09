@@ -77,7 +77,11 @@ public class Main {
                         case "POST" -> {
                             ConsoleIO.printLine("한 줄 일기를 작성해주세요!");
                             final String input = ConsoleIO.readLine();
-                            server.post(input);
+                            try{
+                                server.post(input);
+                            }catch(IllegalArgumentException error){
+                                ConsoleIO.printLine("한 줄 일기는 30자 이하로 작성해주세요");
+                            }
                         }
 
                         case "DELETE" -> {

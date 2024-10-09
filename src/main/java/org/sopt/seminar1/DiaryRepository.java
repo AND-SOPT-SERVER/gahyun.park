@@ -10,11 +10,20 @@ import java.util.concurrent.atomic.AtomicLong;
 // 저장소
 public class DiaryRepository {
     private final Map<Long, String> storage = new ConcurrentHashMap<>();
+    /*
+    map은 key value 형태로 저장 ( 리스트나 배열처럼 순차적으로 요소 값을 구하지 않음 )
+    HashMap은 빠르지만 thread-safe하지 않음 반면에 ConcurrentHashMap은 thread-safe해 멀티 스레드 환경에서 사용하기 좋음
+    */
     private final AtomicLong numbering = new AtomicLong();
+    /* Long 자료형을 Wrapping 클래스로 감싼 자료형
+    일반적으로 Long 자료형을 사용하면 멀티쓰레드 환경에서 동기화 문제 때문에 synchronized 키워드를 사용해서 값을 유지시켜야함
+    하지만 AtomicLong은 내부에 CAS 알고리즘을 사용해서 synchronized 보다 적은 비용으로 동시성을 보장할 수 있게함
+     */
 
     void save(final Diary diary){
         // 채번 과정
          final long id = numbering.addAndGet(1);
+         // addAndGet 메서드는 AtomicLong의 현재 값을 증가시키고 그 값을 long 타입으로 반환
 
          // 저장 과정
         storage.put(id,diary.getBody());

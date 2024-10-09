@@ -11,6 +11,7 @@ public class DiaryService {
 
      void writeDiary(final String body) {
          final Diary diary = new Diary(null,body);
+         // 질문 : body 자체를 넘겨주는게 아닌 diary 객체로 넘겨주었을때 장점은 무엇인지
         diaryRepository.save(diary);
     }
 
