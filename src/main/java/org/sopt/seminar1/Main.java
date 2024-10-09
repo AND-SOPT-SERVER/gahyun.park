@@ -68,7 +68,7 @@ public class Main {
                         case "GET" -> {
                             server.getList().forEach(diary -> {
                                 try {
-                                    ConsoleIO.printLine(diary.getId()+" "+diary.getBody());
+                                    ConsoleIO.printLine(diary.getId() + " " + diary.getBody());
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
@@ -77,9 +77,9 @@ public class Main {
                         case "POST" -> {
                             ConsoleIO.printLine("한 줄 일기를 작성해주세요!");
                             final String input = ConsoleIO.readLine();
-                            try{
+                            try {
                                 server.post(input);
-                            }catch(IllegalArgumentException error){
+                            } catch (IllegalArgumentException error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -87,9 +87,9 @@ public class Main {
                         case "DELETE" -> {
                             ConsoleIO.printLine("삭제할 id 를 입력하세요!");
                             final String input = ConsoleIO.readLine();
-                            try{
-                            server.delete(input);}
-                            catch(IllegalArgumentException error){
+                            try {
+                                server.delete(input);
+                            } catch (IllegalArgumentException error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -99,9 +99,9 @@ public class Main {
 
                             ConsoleIO.printLine("수정 body 를 입력하세요!");
                             final String inputBody = ConsoleIO.readLine();
-                            try{
-                            server.patch(inputId, inputBody);}
-                            catch(IllegalArgumentException error){
+                            try {
+                                server.patch(inputId, inputBody);
+                            } catch (IllegalArgumentException error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
