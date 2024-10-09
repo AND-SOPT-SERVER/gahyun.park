@@ -20,8 +20,8 @@ public class DiaryRepository {
     하지만 AtomicLong은 내부에 CAS 알고리즘을 사용해서 synchronized 보다 적은 비용으로 동시성을 보장할 수 있게함
      */
 
-    void save(final Diary diary){
-        // 채번 과정
+    final void save(final Diary diary){
+         // 채번 과정
          final long id = numbering.addAndGet(1);
          // addAndGet 메서드는 AtomicLong의 현재 값을 증가시키고 그 값을 long 타입으로 반환
 
@@ -29,7 +29,15 @@ public class DiaryRepository {
         storage.put(id,diary.getBody());
     }
 
-    List<Diary> findAll(){
+    final void remove(final long id){
+        if (storage.containsKey(id)) {
+            storage.remove(id);
+        }else{
+            throw new IllegalArgumentException("아이디가 존재하지 않습니다");
+        }
+    }
+
+    final List<Diary> findAll(){
         // 1. diary를 담을 구조
         final List<Diary> diaryList =new ArrayList<>();
 
@@ -37,12 +45,16 @@ public class DiaryRepository {
         for(long index = 1;index<=numbering.longValue();index++){
            final String body =  storage.get(index);
 
-           // 2-1. 불러온 값을 구성한 자료구조로 이관
-           diaryList.add(new Diary(index,body));
+           // 2-1. 불러온 값을 구성한 자료구조로 이관, 삭제된 요소면 diary로 만들지 않음.
+            if(body!=null){
+                diaryList.add(new Diary(index,body));
+            }
         }
         // 3. 불러온 자료구조를 응답
         return diaryList;
     }
+
+
 
 
 }

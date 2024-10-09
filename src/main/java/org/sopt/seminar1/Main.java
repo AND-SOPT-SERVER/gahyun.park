@@ -80,14 +80,18 @@ public class Main {
                             try{
                                 server.post(input);
                             }catch(IllegalArgumentException error){
-                                ConsoleIO.printLine("한 줄 일기는 30자 이하로 작성해주세요");
+                                ConsoleIO.printLine(error.getMessage());
                             }
                         }
 
                         case "DELETE" -> {
                             ConsoleIO.printLine("삭제할 id 를 입력하세요!");
                             final String input = ConsoleIO.readLine();
-                            server.delete(input);
+                            try{
+                            server.delete(input);}
+                            catch(IllegalArgumentException error){
+                                ConsoleIO.printLine(error.getMessage());
+                            }
                         }
                         case "PATCH" -> {
                             ConsoleIO.printLine("수정할 id 를 입력하세요!");

@@ -29,13 +29,16 @@ public class DiaryController {
         // 원래 사용자에서 온 값이 적절한 값인지 처리하는 역할도 함
         // body 30자보다 크면 예외처리
         if(body.length()>=30){
-           throw new IllegalArgumentException();
+           throw new IllegalArgumentException("한 줄 일기는 30자 이상이어야 합니다.");
         }
        diaryService.writeDiary(body);
     }
 
     final void delete(final String id) {
-
+        if (!id.trim().matches("\\d+")) {
+            throw new IllegalArgumentException("ID는 숫자만 포함해야 합니다.");
+        };
+        diaryService.deleteDiary(Long.parseLong(id));
     }
 
     final void patch(final String id, final String body) {
