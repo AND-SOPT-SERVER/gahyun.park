@@ -69,7 +69,7 @@ public class DiaryRepository {
 
     private void checkContainId(final long id) {
         if (!storage.containsKey(id)) {
-            throw new IllegalArgumentException("삭제된 일기가 아닙니다");
+            throw new IllegalStateException("존재하는 아이디가 아닙니다.");
         }
     }
 }

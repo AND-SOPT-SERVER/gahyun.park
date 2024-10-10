@@ -8,6 +8,7 @@ import java.util.List;
 // 처리 로직
 public class DiaryService {
     private final DiaryRepository diaryRepository = new DiaryRepository();
+    private int patchCount = 0;
 
     final void writeDiary(final String body) {
         //final Diary diary = new Diary(null, body, false);
@@ -31,6 +32,11 @@ public class DiaryService {
     }
 
     final void patchDiary(final long id, final String body) {
+        if (patchCount >= 2) {
+            throw new IllegalStateException("일기는 하루에 두 번 수정할 수 있습니다");
+        }
+        patchCount++;
+        // 질문: 외부에서 숫자를 접근하는게 아니므로 Getter/Setter 사용하지 않았는데 이런 경우에도 Getter/Setter 가 필요한지
         diaryRepository.patch(id, body);
     }
 

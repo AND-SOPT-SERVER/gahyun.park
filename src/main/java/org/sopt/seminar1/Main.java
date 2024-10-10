@@ -79,7 +79,7 @@ public class Main {
                             final String input = ConsoleIO.readLine();
                             try {
                                 server.post(input);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -89,7 +89,7 @@ public class Main {
                             final String input = ConsoleIO.readLine();
                             try {
                                 server.delete(input);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -101,7 +101,7 @@ public class Main {
                             final String inputBody = ConsoleIO.readLine();
                             try {
                                 server.patch(inputId, inputBody);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -110,7 +110,7 @@ public class Main {
                             final String inputId = ConsoleIO.readLine();
                             try {
                                 server.restore(inputId);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
