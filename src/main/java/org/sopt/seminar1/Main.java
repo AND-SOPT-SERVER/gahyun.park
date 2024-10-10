@@ -105,6 +105,15 @@ public class Main {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
+                        case "RESTORE" -> {
+                            ConsoleIO.printLine("복구할 id 를 입력하세요!");
+                            final String inputId = ConsoleIO.readLine();
+                            try {
+                                server.restore(inputId);
+                            } catch (IllegalArgumentException error) {
+                                ConsoleIO.printLine(error.getMessage());
+                            }
+                        }
                         case "FINISH" -> {
                             server.finish();
                         }
@@ -136,6 +145,7 @@ public class Main {
                     - POST : 일기 작성하기
                     - DELETE : 일기 제거하기
                     - PATCH : 일기 수정하기
+                    - RESTORE: 일기 복구하기 
                     """;
 
         }
