@@ -1,6 +1,7 @@
 package org.sopt.seminar1;
 
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,10 @@ public class DiaryRepository {
     일반적으로 Long 자료형을 사용하면 멀티쓰레드 환경에서 동기화 문제 때문에 synchronized 키워드를 사용해서 값을 유지시켜야함
     하지만 AtomicLong은 내부에 CAS 알고리즘을 사용해서 synchronized 보다 적은 비용으로 동시성을 보장할 수 있게함
      */
+
+    private AtomicLong patchCount = new AtomicLong();
+    private LocalDate patchDate = LocalDate.now();
+
 
     final void save(final String body) {
         // 채번 과정
@@ -58,6 +63,7 @@ public class DiaryRepository {
         checkContainId(id);
         Diary diary = storage.get(id);
         diary.setBody(body);
+        patchCount.addAndGet(1);
     }
 
     final void restore(final long id) {
@@ -71,5 +77,18 @@ public class DiaryRepository {
         if (!storage.containsKey(id)) {
             throw new IllegalStateException("존재하는 아이디가 아닙니다.");
         }
+    }
+
+    final LocalDate getPatchDate() {
+        return this.patchDate;
+    }
+
+    final void resetPatchInfo() {
+        this.patchDate = LocalDate.now();
+        this.patchCount.set(0);
+    }
+
+    final long getPatchCount() {
+        return this.patchCount.longValue();
     }
 }

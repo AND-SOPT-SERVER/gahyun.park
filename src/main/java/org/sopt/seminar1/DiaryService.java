@@ -3,12 +3,12 @@ package org.sopt.seminar1;
 
 import org.sopt.seminar1.DiaryRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 // 처리 로직
 public class DiaryService {
     private final DiaryRepository diaryRepository = new DiaryRepository();
-    private int patchCount = 0;
 
     final void writeDiary(final String body) {
         //final Diary diary = new Diary(null, body, false);
@@ -32,11 +32,12 @@ public class DiaryService {
     }
 
     final void patchDiary(final long id, final String body) {
-        if (patchCount >= 2) {
+        if (!diaryRepository.getPatchDate().equals(LocalDate.now())) {
+            diaryRepository.resetPatchInfo();
+        }    // 날짜가 다른 경우 현재 날짜로 업데이트 ( 예를 들어서 10/10일날 2개 업데이트했는데 10/11이 되면 초기화 필요 )
+        if (diaryRepository.getPatchDate().equals(LocalDate.now()) && diaryRepository.getPatchCount() == 2) {
             throw new IllegalStateException("일기는 하루에 두 번 수정할 수 있습니다");
         }
-        patchCount++;
-        // 질문: 외부에서 숫자를 접근하는게 아니므로 Getter/Setter 사용하지 않았는데 이런 경우에도 Getter/Setter 가 필요한지
         diaryRepository.patch(id, body);
     }
 
