@@ -79,7 +79,7 @@ public class Main {
                             final String input = ConsoleIO.readLine();
                             try {
                                 server.post(input);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -89,7 +89,7 @@ public class Main {
                             final String input = ConsoleIO.readLine();
                             try {
                                 server.delete(input);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -101,7 +101,16 @@ public class Main {
                             final String inputBody = ConsoleIO.readLine();
                             try {
                                 server.patch(inputId, inputBody);
-                            } catch (IllegalArgumentException error) {
+                            } catch (Exception error) {
+                                ConsoleIO.printLine(error.getMessage());
+                            }
+                        }
+                        case "RESTORE" -> {
+                            ConsoleIO.printLine("복구할 id 를 입력하세요!");
+                            final String inputId = ConsoleIO.readLine();
+                            try {
+                                server.restore(inputId);
+                            } catch (Exception error) {
                                 ConsoleIO.printLine(error.getMessage());
                             }
                         }
@@ -136,6 +145,7 @@ public class Main {
                     - POST : 일기 작성하기
                     - DELETE : 일기 제거하기
                     - PATCH : 일기 수정하기
+                    - RESTORE: 일기 복구하기 
                     """;
 
         }
