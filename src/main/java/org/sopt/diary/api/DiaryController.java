@@ -30,8 +30,13 @@ public class DiaryController {
     // RequestBody annotation을 통해서 HTTP의 Body를 해당 어노테이션이 지정된 객체에 매핑
     // DiaryRequest는 Entity 필드들을 담아 로직을 처리하는 곳으로 데이터를 넘겨주고 DTO 클래스라함.
     @PostMapping("/diary")
-    void post(@RequestBody DiaryRequest diaryRequest) {
+    ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest) {
+        if (diaryRequest.getContent().length() > 30) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
+        }
         diaryService.createDiary(diaryRequest.getContent(), diaryRequest.getTitle());
+        // ResponseEntity.ok().build()는 성공했지만 특별한 데이터를 반환하지 않겠다.
+        return ResponseEntity.ok().build();
     }
 
     // ResponseEntity는 HttpStatus, HttpHeaders, HttpBody를 포함한 클래스
