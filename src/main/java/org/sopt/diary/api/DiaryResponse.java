@@ -2,18 +2,18 @@ package org.sopt.diary.api;
 
 public class DiaryResponse {
     private long id;
-    private String name;
+    private String content;
 
-    public DiaryResponse(long id, String name) {
+    public DiaryResponse(long id, String content) {
         this.id = id;
-        this.name = name;
+        this.content = content;
     }
 
     public long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getContent() {
+        return content;
     }
 }

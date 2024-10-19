@@ -3,19 +3,19 @@ package org.sopt.diary.service;
 import org.sopt.diary.repository.DiaryEntity;
 
 public class Diary {
-    private final String name;
+    private final String content;
     private final long id;
 
-    public Diary(long id, String name) {
+    public Diary(long id, String content) {
         this.id = id;
-        this.name = name;
+        this.content = content;
     }
 
     public long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getContent() {
+        return content;
     }
 }

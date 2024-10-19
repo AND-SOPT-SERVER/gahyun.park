@@ -4,6 +4,7 @@ import org.sopt.diary.repository.DiaryEntity;
 import org.sopt.diary.repository.DiaryRepository;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,10 @@ public class DiaryService {
         this.diaryRepository = diaryRepository;
     }
 
-    public void createDiary() {
+    public void createDiary(String content, String title) {
+        LocalDate currentDate = LocalDate.now();
         diaryRepository.save(
-                new DiaryEntity("가현")
+                new DiaryEntity(content, title, currentDate)
         );
     }
 
@@ -30,7 +32,7 @@ public class DiaryService {
         final List<Diary> diaryList = new ArrayList<>();
 
         for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getName()));
+            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent()));
         }
 
         return diaryList;

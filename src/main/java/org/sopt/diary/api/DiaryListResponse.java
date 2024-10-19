@@ -8,7 +8,7 @@ public class DiaryListResponse {
     public DiaryListResponse(List<DiaryResponse> diaryList) {
         this.diaryList = diaryList;
     }
-
+    
     public List<DiaryResponse> getDiaryList() {
         return diaryList;
     }
