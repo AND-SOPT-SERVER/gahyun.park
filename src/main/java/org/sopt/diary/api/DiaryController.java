@@ -2,6 +2,7 @@ package org.sopt.diary.api;
 
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class DiaryController {
 
     // ResponseEntity는 HttpStatus, HttpHeaders, HttpBody를 포함한 클래스
     @GetMapping("/diaries")
-    ResponseEntity<DiaryListResponse> get() {
+    ResponseEntity<DiaryListResponse> getDiaries() {
         // Service로부터 가져온 DiaryList
         List<Diary> diaryList = diaryService.getList();
 
@@ -56,12 +57,22 @@ public class DiaryController {
     }
 
     @GetMapping("/diary/{id}")
-    ResponseEntity<Response> get(@PathVariable long id) {
+    ResponseEntity<Response> getDiary(@PathVariable long id) {
         try {
             Diary diary = diaryService.getDiary(id);
             return ResponseEntity.ok(new DiaryResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))));
         } catch (NoSuchElementException error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
         }
+    }
+
+    @DeleteMapping("/diary/{id}")
+    ResponseEntity<Response> delete(@PathVariable long id) {
+        try {
+            diaryService.deleteDiary(id);
+        } catch (NoSuchElementException error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
+        }
+        return ResponseEntity.ok().build();
     }
 }

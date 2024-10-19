@@ -27,6 +27,11 @@ public class DiaryService {
         );
     }
 
+    public void deleteDiary(long id) {
+        if (!diaryRepository.existsById(id)) throw new NoSuchElementException("존재하지 않는 일기입니다");
+        diaryRepository.deleteById(id);
+    }
+
     public List<Diary> getList() {
         Pageable pageable = PageRequest.of(0, 10);
         // repository로 부터 DiaryEntity 가져옴
@@ -44,6 +49,7 @@ public class DiaryService {
 
     public Diary getDiary(long id) {
         // repository로 부터 DiaryEntity 가져옴
+        // findById 사용해도 될듯 ?
         final List<DiaryEntity> diaryEntityList = diaryRepository.findAll();
 
         // DiaryEntity를 Diary로 변환해주는 작업
