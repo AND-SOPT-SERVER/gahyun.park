@@ -1,9 +1,8 @@
 package org.sopt.diary.service;
 
+import jakarta.transaction.Transactional;
 import org.sopt.diary.repository.DiaryEntity;
 import org.sopt.diary.repository.DiaryRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -27,15 +26,26 @@ public class DiaryService {
         );
     }
 
-    public void deleteDiary(long id) {
+    private void checkExistingId(long id) {
         if (!diaryRepository.existsById(id)) throw new NoSuchElementException("존재하지 않는 일기입니다");
+    }
+
+    public void deleteDiary(long id) {
+        checkExistingId(id);
         diaryRepository.deleteById(id);
     }
 
+    // 데이터 베이스에 작업이 일어나도록 Transactional annotation 추가
+    @Transactional
+    public void updateDiary(long id, String content) {
+        checkExistingId(id);
+        DiaryEntity diaryEntity = diaryRepository.findById(id).get();
+        diaryEntity.setContent(content);
+    }
+
     public List<Diary> getList() {
-        Pageable pageable = PageRequest.of(0, 10);
         // repository로 부터 DiaryEntity 가져옴
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findAllByOrderByDateDesc(pageable);
+        final List<DiaryEntity> diaryEntityList = diaryRepository.findTop10ByOrderByDateDesc();
 
         // DiaryEntity를 Diary로 변환해주는 작업
         final List<Diary> diaryList = new ArrayList<>();

@@ -45,4 +45,8 @@ public class DiaryEntity {
     public LocalDateTime getDate() {
         return this.date;
     }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 }

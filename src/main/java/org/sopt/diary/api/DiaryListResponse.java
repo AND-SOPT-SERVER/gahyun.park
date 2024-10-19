@@ -3,13 +3,13 @@ package org.sopt.diary.api;
 import java.util.List;
 
 public class DiaryListResponse {
-    private List<DiaryResponse> diaryList;
+    private List<DiaryGetResponse> diaryList;
 
-    public DiaryListResponse(List<DiaryResponse> diaryList) {
+    public DiaryListResponse(List<DiaryGetResponse> diaryList) {
         this.diaryList = diaryList;
     }
-    
-    public List<DiaryResponse> getDiaryList() {
+
+    public List<DiaryGetResponse> getDiaryList() {
         return diaryList;
     }
 }

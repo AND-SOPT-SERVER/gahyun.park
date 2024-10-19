@@ -9,5 +9,5 @@ import java.util.List;
 
 @Component
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
-    List<DiaryEntity> findAllByOrderByDateDesc(Pageable pageable);
+    List<DiaryEntity> findTop10ByOrderByDateDesc();
 }

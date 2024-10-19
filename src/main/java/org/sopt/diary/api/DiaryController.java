@@ -2,7 +2,6 @@ package org.sopt.diary.api;
 
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +31,10 @@ public class DiaryController {
     // DiaryRequest는 Entity 필드들을 담아 로직을 처리하는 곳으로 데이터를 넘겨주고 DTO 클래스라함.
     @PostMapping("/diary")
     ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest) {
-        if (diaryRequest.getContent().length() > 30) {
+        if (diaryRequest.content().length() > 30) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
         }
-        diaryService.createDiary(diaryRequest.getContent(), diaryRequest.getTitle());
+        diaryService.createDiary(diaryRequest.content(), diaryRequest.title());
         // ResponseEntity.ok().build()는 성공했지만 특별한 데이터를 반환하지 않겠다.
         return ResponseEntity.ok().build();
     }
@@ -47,9 +46,9 @@ public class DiaryController {
         List<Diary> diaryList = diaryService.getList();
 
         // Client 와 협의한 interface 로 변화
-        List<DiaryResponse> diaryResponseList = new ArrayList<>();
+        List<DiaryGetResponse> diaryResponseList = new ArrayList<>();
         for (Diary diary : diaryList) {
-            diaryResponseList.add(new DiaryResponse(diary.getId(), diary.getContent()));
+            diaryResponseList.add(new DiaryGetResponse(diary.getId(), diary.getContent()));
         }
 
         // DiaryListResponse를 JSON 형태로 반환
@@ -60,7 +59,7 @@ public class DiaryController {
     ResponseEntity<Response> getDiary(@PathVariable long id) {
         try {
             Diary diary = diaryService.getDiary(id);
-            return ResponseEntity.ok(new DiaryResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))));
+            return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))));
         } catch (NoSuchElementException error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
         }
@@ -75,4 +74,18 @@ public class DiaryController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/diary/{id}")
+    ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryRequest diaryRequest) {
+        try {
+            if (diaryRequest.content().length() > 30) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
+            }
+            diaryService.updateDiary(id, diaryRequest.content());
+        } catch (NoSuchElementException error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
+        }
+        return ResponseEntity.ok().build();
+    }
+
 }
