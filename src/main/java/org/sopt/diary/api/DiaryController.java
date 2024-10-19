@@ -34,16 +34,21 @@ public class DiaryController {
         if (diaryRequest.content().length() > 30) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
         }
-        diaryService.createDiary(diaryRequest.content(), diaryRequest.title());
+        diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category());
         // ResponseEntity.ok().build()는 성공했지만 특별한 데이터를 반환하지 않겠다.
         return ResponseEntity.ok().build();
     }
 
     // ResponseEntity는 HttpStatus, HttpHeaders, HttpBody를 포함한 클래스
     @GetMapping("/diaries")
-    ResponseEntity<DiaryListResponse> getDiaries() {
+    ResponseEntity<DiaryListResponse> getDiaries(@RequestParam(value = "category", required = false) String category) {
         // Service로부터 가져온 DiaryList
-        List<Diary> diaryList = diaryService.getList();
+        List<Diary> diaryList;
+        if (category != null) {
+            diaryList = diaryService.getDiaryListByCategory(category);
+        } else {
+            diaryList = diaryService.getList();
+        }
 
         // Client 와 협의한 interface 로 변화
         List<DiaryGetResponse> diaryResponseList = new ArrayList<>();
@@ -55,11 +60,11 @@ public class DiaryController {
         return ResponseEntity.ok(new DiaryListResponse(diaryResponseList));
     }
 
-    @GetMapping("/diary/{id}")
+    @GetMapping("/diary/")
     ResponseEntity<Response> getDiary(@PathVariable long id) {
         try {
             Diary diary = diaryService.getDiary(id);
-            return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))));
+            return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")), diary.getCategory()));
         } catch (NoSuchElementException error) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
         }

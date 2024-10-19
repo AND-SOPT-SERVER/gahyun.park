@@ -1,4 +1,5 @@
 package org.sopt.diary.api;
 
-public record DiaryDetailResponse(long id, String content, String title, String date) implements Response {
+public record DiaryDetailResponse(long id, String content, String title, String date,
+                                  String category) implements Response {
 }

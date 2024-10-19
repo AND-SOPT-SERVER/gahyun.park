@@ -10,4 +10,6 @@ import java.util.List;
 @Component
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
     List<DiaryEntity> findTop10ByOrderByDateDesc();
+
+    List<DiaryEntity> findByCategory(String category);
 }

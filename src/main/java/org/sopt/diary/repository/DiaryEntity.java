@@ -18,16 +18,19 @@ public class DiaryEntity {
     public String title;
     @Column
     public LocalDateTime date;
+    @Column
+    public String category;
 
     public DiaryEntity() {
 
     }
 
 
-    public DiaryEntity(final String content, final String title, final LocalDateTime date) {
+    public DiaryEntity(final String content, final String title, final LocalDateTime date, final String category) {
         this.content = content;
         this.title = title;
         this.date = date;
+        this.category = category;
     }
 
     public String getContent() {
@@ -44,6 +47,10 @@ public class DiaryEntity {
 
     public LocalDateTime getDate() {
         return this.date;
+    }
+
+    public String getCategory() {
+        return this.category;
     }
 
     public void setContent(String content) {

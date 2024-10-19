@@ -19,10 +19,10 @@ public class DiaryService {
         this.diaryRepository = diaryRepository;
     }
 
-    public void createDiary(String content, String title) {
+    public void createDiary(String content, String title, String category) {
         LocalDateTime currentDate = LocalDateTime.now();
         diaryRepository.save(
-                new DiaryEntity(content, title, currentDate)
+                new DiaryEntity(content, title, currentDate, category)
         );
     }
 
@@ -51,7 +51,7 @@ public class DiaryService {
         final List<Diary> diaryList = new ArrayList<>();
 
         for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate()));
+            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory()));
         }
 
         return diaryList;
@@ -65,9 +65,20 @@ public class DiaryService {
         // DiaryEntity를 Diary로 변환해주는 작업
         for (DiaryEntity diaryEntity : diaryEntityList) {
             if (id == diaryEntity.getId())
-                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate());
+                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory());
         }
 
         throw new NoSuchElementException(id + " not found");
+    }
+
+    public List<Diary> getDiaryListByCategory(String category) {
+        final List<DiaryEntity> diaryEntityList = diaryRepository.findByCategory(category);
+
+        final List<Diary> diaryList = new ArrayList<>();
+        for (DiaryEntity diaryEntity : diaryEntityList) {
+            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory()));
+        }
+
+        return diaryList;
     }
 }
