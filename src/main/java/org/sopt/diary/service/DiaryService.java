@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Component
 public class DiaryService {
@@ -32,9 +33,22 @@ public class DiaryService {
         final List<Diary> diaryList = new ArrayList<>();
 
         for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent()));
+            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate()));
         }
 
         return diaryList;
+    }
+
+    public Diary getDiary(long id) {
+        // repository로 부터 DiaryEntity 가져옴
+        final List<DiaryEntity> diaryEntityList = diaryRepository.findAll();
+
+        // DiaryEntity를 Diary로 변환해주는 작업
+        for (DiaryEntity diaryEntity : diaryEntityList) {
+            if (id == diaryEntity.getId())
+                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate());
+        }
+        System.out.println("nnnnnnn");
+        throw new NoSuchElementException(id + " not found");
     }
 }

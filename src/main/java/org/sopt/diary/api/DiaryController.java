@@ -2,14 +2,14 @@ package org.sopt.diary.api;
 
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 // RestController라는 annotation을 통해 DiaryController는 bean 객체가 됨
 // DiaryController는 bean 객체가 됨으로써 new를 통해 직접 생성할 필요가 없고 Spring Boot에 의해 관리
@@ -35,7 +35,7 @@ public class DiaryController {
     }
 
     // ResponseEntity는 HttpStatus, HttpHeaders, HttpBody를 포함한 클래스
-    @GetMapping("/diary")
+    @GetMapping("/diaries")
     ResponseEntity<DiaryListResponse> get() {
         // Service로부터 가져온 DiaryList
         List<Diary> diaryList = diaryService.getList();
@@ -48,5 +48,15 @@ public class DiaryController {
 
         // DiaryListResponse를 JSON 형태로 반환
         return ResponseEntity.ok(new DiaryListResponse(diaryResponseList));
+    }
+
+    @GetMapping("/diary/{id}")
+    ResponseEntity<Response> get(@PathVariable long id) {
+        try {
+            Diary diary = diaryService.getDiary(id);
+            return ResponseEntity.ok(new DiaryResponse(diary.getId(), diary.getContent(), diary.getTitle(), diary.getDate().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))));
+        } catch (NoSuchElementException error) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
+        }
     }
 }
