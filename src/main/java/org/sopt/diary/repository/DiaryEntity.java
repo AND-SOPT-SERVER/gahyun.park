@@ -3,7 +3,7 @@ package org.sopt.diary.repository;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 // 데이터베이스 있는 것를 매핑시켜주는 것
 @Entity
@@ -14,15 +14,17 @@ public class DiaryEntity {
 
     @Column
     public String content;
+    @Column
     public String title;
-    public LocalDate date;
+    @Column
+    public LocalDateTime date;
 
     public DiaryEntity() {
 
     }
 
 
-    public DiaryEntity(final String content, final String title, final LocalDate date) {
+    public DiaryEntity(final String content, final String title, final LocalDateTime date) {
         this.content = content;
         this.title = title;
         this.date = date;
@@ -40,7 +42,7 @@ public class DiaryEntity {
         return this.title;
     }
 
-    public LocalDate getDate() {
+    public LocalDateTime getDate() {
         return this.date;
     }
 }
