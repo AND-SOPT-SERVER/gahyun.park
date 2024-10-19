@@ -3,6 +3,7 @@ package org.sopt.diary.service;
 import jakarta.transaction.Transactional;
 import org.sopt.diary.repository.DiaryEntity;
 import org.sopt.diary.repository.DiaryRepository;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,9 @@ public class DiaryService {
 
     public void createDiary(String content, String title, String category) {
         LocalDateTime currentDate = LocalDateTime.now();
+        if (diaryRepository.findByTitle(title).isPresent())
+            throw new DuplicateKeyException("이미 존재하는 제목입니다");
+
         diaryRepository.save(
                 new DiaryEntity(content, title, currentDate, category)
         );

@@ -2,6 +2,7 @@ package org.sopt.diary.api;
 
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +32,14 @@ public class DiaryController {
     // DiaryRequest는 Entity 필드들을 담아 로직을 처리하는 곳으로 데이터를 넘겨주고 DTO 클래스라함.
     @PostMapping("/diary")
     ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest) {
-        if (diaryRequest.content().length() > 30) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
+        try {
+            if (diaryRequest.content().length() > 30) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
+            }
+            diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category());
+        } catch (DuplicateKeyException error) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(error.getMessage()));
         }
-        diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category());
         // ResponseEntity.ok().build()는 성공했지만 특별한 데이터를 반환하지 않겠다.
         return ResponseEntity.ok().build();
     }
@@ -60,7 +65,7 @@ public class DiaryController {
         return ResponseEntity.ok(new DiaryListResponse(diaryResponseList));
     }
 
-    @GetMapping("/diary/")
+    @GetMapping("/diary")
     ResponseEntity<Response> getDiary(@PathVariable long id) {
         try {
             Diary diary = diaryService.getDiary(id);
