@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 @RestController
 public class DiaryController {
     private final DiaryService diaryService;
+    private final static int CONTENT_LENGTH = 30;
 
     // 사용할 의존 객체를 생성자를 통해 주입 받음
     public DiaryController(DiaryService diaryService) {
@@ -33,7 +34,7 @@ public class DiaryController {
     @PostMapping("/diary")
     ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest) {
         try {
-            if (diaryRequest.content().length() > 30) {
+            if (diaryRequest.content().length() > CONTENT_LENGTH) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
             }
             diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category());
@@ -88,7 +89,7 @@ public class DiaryController {
     @PatchMapping("/diary/{id}")
     ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryRequest diaryRequest) {
         try {
-            if (diaryRequest.content().length() > 30) {
+            if (diaryRequest.content().length() > CONTENT_LENGTH) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
             }
             diaryService.updateDiary(id, diaryRequest.content());
