@@ -78,11 +78,14 @@ public class DiaryService {
     public List<Diary> getDiaryListByCategory(String category) {
         final List<DiaryEntity> diaryEntityList = diaryRepository.findByCategory(category);
 
-        final List<Diary> diaryList = new ArrayList<>();
-        for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory()));
-        }
-
-        return diaryList;
+        return diaryEntityList.stream()
+                .map(diaryEntity -> new Diary(
+                        diaryEntity.getId(),
+                        diaryEntity.getContent(),
+                        diaryEntity.getTitle(),
+                        diaryEntity.getDate(),
+                        diaryEntity.getCategory()
+                ))
+                .toList();
     }
 }
