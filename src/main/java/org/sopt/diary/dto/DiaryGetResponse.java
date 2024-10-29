@@ -1,4 +1,4 @@
-package org.sopt.diary.api;
+package org.sopt.diary.dto;
 
 public record DiaryGetResponse(
         long id,

@@ -1,5 +1,6 @@
 package org.sopt.diary.api;
 
+import org.sopt.diary.dto.*;
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
 import org.springframework.dao.DuplicateKeyException;
