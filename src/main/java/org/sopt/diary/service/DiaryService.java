@@ -1,15 +1,20 @@
 package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
+import org.sopt.diary.error.BadRequestException;
+import org.sopt.diary.repository.Category;
 import org.sopt.diary.repository.DiaryEntity;
 import org.sopt.diary.repository.DiaryRepository;
+import org.sopt.diary.util.ErrorMessages;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 @Component
 public class DiaryService {
@@ -20,23 +25,14 @@ public class DiaryService {
         this.diaryRepository = diaryRepository;
     }
 
-    public void createDiary(String content, String title, String category) {
-        LocalDateTime currentDate = LocalDateTime.now();
-        if (diaryRepository.findByTitle(title).isPresent())
-            throw new DuplicateKeyException("이미 존재하는 제목입니다");
+    public void createDiary(String content, String title, Category category, Boolean isPrivate) {
+        diaryRepository.save(new DiaryEntity(content, title, category, isPrivate));
 
-        diaryRepository.save(
-                new DiaryEntity(content, title, currentDate, category)
-        );
     }
 
-    private void checkExistingId(long id) {
-        if (!diaryRepository.existsById(id)) throw new NoSuchElementException("존재하지 않는 일기입니다");
-    }
 
     public void deleteDiary(long id) {
-        checkExistingId(id);
-        diaryRepository.deleteById(id);
+        diaryRepository.deleteById(id).;
     }
 
     // 데이터 베이스에 작업이 일어나도록 Transactional annotation 추가
@@ -49,13 +45,13 @@ public class DiaryService {
 
     public List<Diary> getList() {
         // repository로 부터 DiaryEntity 가져옴
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findTop10ByOrderByDateDesc();
+        final List<DiaryEntity> diaryEntityList = diaryRepository.findTop10ByOrderByCreatedAtDesc();
 
         // DiaryEntity를 Diary로 변환해주는 작업
         final List<Diary> diaryList = new ArrayList<>();
 
         for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory()));
+            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.getCategory()));
         }
 
         return diaryList;
@@ -69,13 +65,13 @@ public class DiaryService {
         // DiaryEntity를 Diary로 변환해주는 작업
         for (DiaryEntity diaryEntity : diaryEntityList) {
             if (id == diaryEntity.getId())
-                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory());
+                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.getCategory());
         }
 
         throw new NoSuchElementException(id + " not found");
     }
 
-    public List<Diary> getDiaryListByCategory(String category) {
+    public List<Diary> getDiaryListByCategory(Category category) {
         final List<DiaryEntity> diaryEntityList = diaryRepository.findByCategory(category);
 
         return diaryEntityList.stream()
@@ -83,7 +79,7 @@ public class DiaryService {
                         diaryEntity.getId(),
                         diaryEntity.getContent(),
                         diaryEntity.getTitle(),
-                        diaryEntity.getDate(),
+                        diaryEntity.getCreatedAt(),
                         diaryEntity.getCategory()
                 ))
                 .toList();

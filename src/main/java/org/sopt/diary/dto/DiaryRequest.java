@@ -1,4 +1,6 @@
 package org.sopt.diary.dto;
 
-public record DiaryRequest(String content, String title, String category) {
+import org.sopt.diary.repository.Category;
+
+public record DiaryRequest(String content, String title, Category category, boolean isPrivate) {
 }
