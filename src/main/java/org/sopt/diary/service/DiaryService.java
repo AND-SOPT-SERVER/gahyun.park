@@ -2,44 +2,46 @@ package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
 import org.sopt.diary.error.BadRequestException;
-import org.sopt.diary.repository.Category;
-import org.sopt.diary.repository.DiaryEntity;
-import org.sopt.diary.repository.DiaryRepository;
+import org.sopt.diary.error.UnAuthorizedError;
+import org.sopt.diary.repository.*;
 import org.sopt.diary.util.ErrorMessages;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Component
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
 
-    public DiaryService(DiaryRepository diaryRepository) {
+    public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository) {
         this.diaryRepository = diaryRepository;
+        this.userRepository = userRepository;
     }
 
-    public void createDiary(String content, String title, Category category, Boolean isPrivate) {
-        diaryRepository.save(new DiaryEntity(content, title, category, isPrivate));
+    public void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
+        diaryRepository.save(new DiaryEntity(content, title, category, isPrivate, user));
 
     }
 
 
     public void deleteDiary(long id) {
-        diaryRepository.deleteById(id).;
+        userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
+        diaryRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+        diaryRepository.deleteById(id);
     }
 
     // 데이터 베이스에 작업이 일어나도록 Transactional annotation 추가
     @Transactional
     public void updateDiary(long id, String content) {
-        checkExistingId(id);
-        DiaryEntity diaryEntity = diaryRepository.findById(id).get();
+        userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
+        DiaryEntity diaryEntity = diaryRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
         diaryEntity.setContent(content);
     }
 

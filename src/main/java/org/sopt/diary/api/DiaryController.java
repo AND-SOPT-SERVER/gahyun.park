@@ -1,9 +1,7 @@
 package org.sopt.diary.api;
 
 import org.sopt.diary.dto.*;
-import org.sopt.diary.error.UnAuthorizedError;
 import org.sopt.diary.repository.Category;
-import org.sopt.diary.service.AuthenticationService;
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
 import org.sopt.diary.util.Validator;
@@ -18,23 +16,17 @@ import java.util.NoSuchElementException;
 @RestController
 public class DiaryController {
     private final DiaryService diaryService;
-    private final AuthenticationService authenticationService;
     private final static int CONTENT_LENGTH = 30;
 
-    public DiaryController(DiaryService diaryService, AuthenticationService authenticationService) {
+    public DiaryController(DiaryService diaryService) {
         this.diaryService = diaryService;
-        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/diary")
     ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest, @RequestHeader("id") Long id) {
-        if (authenticationService.isUserPresent(id)) {
-            Validator.validTitleLength(diaryRequest.title());
-            Validator.validContentLength(diaryRequest.content());
-            diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category(), diaryRequest.isPrivate());
-        } else {
-            throw new UnAuthorizedError();
-        }
+        Validator.validTitleLength(diaryRequest.title());
+        Validator.validContentLength(diaryRequest.content());
+        diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category(), diaryRequest.isPrivate(), id);
         return ResponseEntity.ok().build();
     }
 
@@ -74,14 +66,8 @@ public class DiaryController {
 
     @PatchMapping("/diary/{id}")
     ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryRequest diaryRequest) {
-        try {
-            if (diaryRequest.content().length() > CONTENT_LENGTH) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("30글자를 초과했습니다."));
-            }
-            diaryService.updateDiary(id, diaryRequest.content());
-        } catch (NoSuchElementException error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
-        }
+        Validator.validContentLength(diaryRequest.content());
+        diaryService.updateDiary(id, diaryRequest.content());
         return ResponseEntity.ok().build();
     }
 

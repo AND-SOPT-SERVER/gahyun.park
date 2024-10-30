@@ -38,11 +38,12 @@ public class DiaryEntity {
 
     }
 
-    public DiaryEntity(final String content, final String title, final Category category, final Boolean isPrivate) {
+    public DiaryEntity(final String content, final String title, final Category category, final Boolean isPrivate, final UserEntity user) {
         this.content = content;
         this.title = title;
         this.category = category;
         this.isPrivate = isPrivate;
+        this.user = user;
     }
 
     public String getContent() {
