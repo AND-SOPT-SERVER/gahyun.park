@@ -81,6 +81,14 @@ public class DiaryService {
         if (!Category.isPresent(category) && !category.equals("ALL")) {
             return new ArrayList<>();
         }
+        if (category.equals("ALL")) {
+            return diaryRepository.findByUser_Id(userId)
+                    .stream()
+                    .sorted((diary1, diary2) -> sortDiary(diary1, diary2, sort))
+                    .limit(10)
+                    .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
+                    .toList();
+        }
         return diaryRepository.findByUser_Id(userId)
                 .stream()
                 .filter(diary -> diary.getCategory().name().equalsIgnoreCase(category))
