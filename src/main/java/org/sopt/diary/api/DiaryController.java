@@ -1,9 +1,9 @@
 package org.sopt.diary.api;
 
+import jakarta.validation.Valid;
 import org.sopt.diary.dto.*;
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
-import org.sopt.diary.util.Validator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +19,7 @@ public class DiaryController {
     }
 
     @PostMapping("/diary")
-    ResponseEntity<Response> post(@RequestBody DiaryRequest diaryRequest, @RequestHeader("id") Long id) {
-        Validator.validTitleLength(diaryRequest.title());
-        Validator.validContentLength(diaryRequest.content());
+    ResponseEntity<Void> post(@Valid @RequestBody DiaryRequest diaryRequest, @RequestHeader("id") Long id) {
         diaryService.createDiary(diaryRequest.content(), diaryRequest.title(), diaryRequest.category(), diaryRequest.isPrivate(), id);
         return ResponseEntity.ok().build();
     }
@@ -41,21 +39,19 @@ public class DiaryController {
 
 
     @GetMapping("/diary/{id}")
-    ResponseEntity<Response> getDiary(@PathVariable long id, @RequestHeader("id") Long userId) {
+    ResponseEntity<DiaryDetailResponse> getDiary(@PathVariable long id, @RequestHeader("id") Long userId) {
         Diary diary = diaryService.getDiary(id, userId);
         return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diary.getCreatedAt()), diary.getCategory()));
     }
 
     @DeleteMapping("/diary/{id}")
-    ResponseEntity<Response> delete(@PathVariable long id, @RequestHeader("id") Long userId) {
-        System.out.println(userId);
+    ResponseEntity<Void> delete(@PathVariable long id, @RequestHeader("id") Long userId) {
         diaryService.deleteDiary(id, userId);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/diary/{id}")
-    ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryUpdateRequest diaryUpdateRequest, @RequestHeader("id") Long userId) {
-        Validator.validContentLength(diaryUpdateRequest.content());
+    ResponseEntity<Void> patch(@PathVariable long id, @Valid @RequestBody DiaryUpdateRequest diaryUpdateRequest, @RequestHeader("id") Long userId) {
         diaryService.updateDiary(id, diaryUpdateRequest.content(), diaryUpdateRequest.category(), userId);
         return ResponseEntity.ok().build();
     }

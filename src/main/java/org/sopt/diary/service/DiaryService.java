@@ -2,9 +2,9 @@ package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
 import org.sopt.diary.dto.DiaryGetResponse;
-import org.sopt.diary.error.BadRequestException;
 import org.sopt.diary.error.ForBiddenException;
-import org.sopt.diary.error.UnAuthorizedError;
+import org.sopt.diary.error.NotFoundException;
+import org.sopt.diary.error.UnAuthorizedException;
 import org.sopt.diary.repository.*;
 import org.sopt.diary.util.ErrorMessages;
 import org.springframework.stereotype.Component;
@@ -24,18 +24,17 @@ public class DiaryService {
         this.userRepository = userRepository;
     }
 
-    public final void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
-        UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
+    public void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedException());
         diaryRepository.save(new DiaryEntity(content, title, category, isPrivate, user));
 
     }
 
 
-    public final void deleteDiary(long id, long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
-        System.out.println(diaryRepository.findById(id).isPresent());
+    public void deleteDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
         DiaryEntity diaryEntity = diaryRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
         if (diaryEntity.getUserId() == userId) {
             diaryRepository.deleteById(id);
         } else {
@@ -46,9 +45,9 @@ public class DiaryService {
 
     @Transactional
     public void updateDiary(long id, String content, Category category, long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
         DiaryEntity diaryEntity = diaryRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
         if (diaryEntity.getUserId() == userId) {
             diaryEntity.setContent(content);
             diaryEntity.setCategory(category);
@@ -58,7 +57,7 @@ public class DiaryService {
 
     }
 
-    public final List<DiaryGetResponse> getList(final String category, final String sort) {
+    public List<DiaryGetResponse> getList(final String category, final String sort) {
         if (!Category.isPresent(category) && !category.equals("ALL")) {
             return new ArrayList<>(); // category가 적합하지 않으면 빈배열로 반환
         }
@@ -77,8 +76,8 @@ public class DiaryService {
                 .toList();
     }
 
-    public final List<DiaryGetResponse> getMyList(final String category, final String sort, long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
+    public List<DiaryGetResponse> getMyList(final String category, final String sort, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
         if (!Category.isPresent(category) && !category.equals("ALL")) {
             return new ArrayList<>();
         }
@@ -91,9 +90,9 @@ public class DiaryService {
                 .toList();
     }
 
-    public final Diary getDiary(long id, long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
-        DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+    public Diary getDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
+        DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
         if (!diaryEntity.getUserId().equals(userId) && diaryEntity.getIsPrivate()) {
             throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
         }// 비공개고 일기 주인이 아니므로 응답 X
