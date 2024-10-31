@@ -1,5 +1,6 @@
 package org.sopt.diary.api;
 
+import jakarta.validation.Valid;
 import org.sopt.diary.dto.ErrorResponse;
 import org.sopt.diary.dto.SignInRequest;
 import org.sopt.diary.dto.SignInResponse;
@@ -20,8 +21,8 @@ public class UserController {
     }
 
     @PostMapping("/users/signup")
-    ResponseEntity<Void> signup(@RequestBody SignUpRequest signUpRequest) {
-        userService.signUp(signUpRequest.loginId(), signUpRequest.password(), signUpRequest.nickname());
+    ResponseEntity<Void> signup(@RequestBody @Valid SignUpRequest signUpRequest) {
+        userService.signUp(signUpRequest.getLoginId(), signUpRequest.getPassword(), signUpRequest.getNickname());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
