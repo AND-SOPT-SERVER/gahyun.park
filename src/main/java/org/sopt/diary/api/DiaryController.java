@@ -1,18 +1,14 @@
 package org.sopt.diary.api;
 
 import org.sopt.diary.dto.*;
-import org.sopt.diary.repository.Category;
 import org.sopt.diary.service.Diary;
 import org.sopt.diary.service.DiaryService;
 import org.sopt.diary.util.Validator;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 public class DiaryController {
@@ -36,6 +32,13 @@ public class DiaryController {
         return ResponseEntity.ok(Diaries);
 
     }
+
+    @GetMapping("/diaries/my")
+    ResponseEntity<List<DiaryGetResponse>> getMyDiaries(@RequestParam(value = "category", required = false, defaultValue = "ALL") String category, @RequestParam(value = "sort", defaultValue = "LATEST", required = false) String sort, @RequestHeader("id") Long userId) {
+        List<DiaryGetResponse> Diaries = diaryService.getMyList(category, sort, userId);
+        return ResponseEntity.ok(Diaries);
+    }
+
 
     @GetMapping("/diary/{id}")
     ResponseEntity<Response> getDiary(@PathVariable long id, @RequestHeader("id") Long userId) {
