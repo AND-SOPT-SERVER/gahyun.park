@@ -1,8 +1,10 @@
 package org.sopt.diary.repository;
 
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -10,7 +12,17 @@ import java.util.Optional;
 
 @Repository
 public interface DiaryRepository extends JpaRepository<DiaryEntity, Long> {
-    List<DiaryEntity> findTop10ByOrderByCreatedAtDesc();
+    @Query("SELECT diary FROM DiaryEntity diary WHERE diary.isPrivate = false AND (:category = 'ALL' OR diary.category = :category) ORDER BY diary.createdAt DESC")
+    List<DiaryEntity> findTop10ByIsPrivateFalseAndCategoryOrderByCreatedAtDesc(@Param("category") String category, Pageable pageable);
+
+    @Query("SELECT diary FROM DiaryEntity diary WHERE diary.isPrivate = false AND (:category = 'ALL' OR diary.category = :category)  ORDER BY LENGTH(diary.content) DESC")
+    List<DiaryEntity> findTop10ByIsPrivateFalseAndCategoryOrderByContentLengthDesc(@Param("category") String category, Pageable pageable);
+
+
+    @Query("SELECT diary FROM DiaryEntity diary WHERE diary.isPrivate = false AND (:category = 'ALL' OR diary.category = :category)")
+    List<DiaryEntity> findTop10ByIsPrivateFalseAndCategory(@Param("category") String category, Pageable pageable);
+
+    List<DiaryEntity> findByIsPrivateFalse();
 
     List<DiaryEntity> findByCategory(Category category);
 

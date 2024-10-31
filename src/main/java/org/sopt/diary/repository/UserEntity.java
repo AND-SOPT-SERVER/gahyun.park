@@ -34,6 +34,10 @@ public class UserEntity {
         return this.password;
     }
 
+    public final String getNickname() {
+        return this.nickname;
+    }
+
     public UserEntity() {
 
     }

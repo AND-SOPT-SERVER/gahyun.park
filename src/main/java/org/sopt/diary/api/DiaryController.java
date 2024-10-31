@@ -17,7 +17,6 @@ import java.util.NoSuchElementException;
 @RestController
 public class DiaryController {
     private final DiaryService diaryService;
-    private final static int CONTENT_LENGTH = 30;
 
     public DiaryController(DiaryService diaryService) {
         this.diaryService = diaryService;
@@ -32,25 +31,14 @@ public class DiaryController {
     }
 
     @GetMapping("/diaries")
-    ResponseEntity<DiaryListResponse> getDiaries(@RequestParam(value = "category", required = false) Category category) {
-        // Service로부터 가져온 DiaryList
-        List<Diary> diaryList;
-        if (category != null) {
-            diaryList = diaryService.getDiaryListByCategory(category);
-        } else {
-            diaryList = diaryService.getList();
-        }
+    ResponseEntity<List<DiaryGetResponse>> getDiaries(@RequestParam(value = "category", required = false, defaultValue = "ALL") String category, @RequestParam(value = "sort", defaultValue = "LATEST", required = false) String sort) {
+        List<DiaryGetResponse> Diaries = diaryService.getList(category, sort);
+        return ResponseEntity.ok(Diaries);
 
-        List<DiaryGetResponse> diaryResponseList = new ArrayList<>();
-        for (Diary diary : diaryList) {
-            diaryResponseList.add(new DiaryGetResponse(diary.getId(), diary.getContent()));
-        }
-
-        return ResponseEntity.ok(new DiaryListResponse(diaryResponseList));
     }
 
     @GetMapping("/diary/{id}")
-    ResponseEntity<Response> getDiary(@PathVariable long id) {
+    ResponseEntity<Response> getDiary(@PathVariable long id, @RequestHeader("id") Long userId) {
         Diary diary = diaryService.getDiary(id);
         return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diary.getCreatedAt()), diary.getCategory()));
     }

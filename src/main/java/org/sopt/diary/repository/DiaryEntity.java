@@ -70,6 +70,10 @@ public class DiaryEntity {
         return this.user.getId();
     }
 
+    public String getUserNickname() {
+        return this.user.getNickname();
+    }
+
     public void setCategory(Category category) {
         this.category = category;
     }

@@ -1,16 +1,21 @@
 package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
+import org.sopt.diary.dto.DiaryGetResponse;
+import org.sopt.diary.dto.DiaryListResponse;
 import org.sopt.diary.error.BadRequestException;
 import org.sopt.diary.error.ForBiddenException;
 import org.sopt.diary.error.UnAuthorizedError;
 import org.sopt.diary.repository.*;
 import org.sopt.diary.util.ErrorMessages;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Component
 public class DiaryService {
@@ -57,18 +62,28 @@ public class DiaryService {
 
     }
 
-    public List<Diary> getList() {
-        // repository로 부터 DiaryEntity 가져옴
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findTop10ByOrderByCreatedAtDesc();
-
-        // DiaryEntity를 Diary로 변환해주는 작업
-        final List<Diary> diaryList = new ArrayList<>();
-
-        for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.getCategory()));
+    public List<DiaryGetResponse> getList(String category, final String sort) {
+        if (!Category.isPresent(category) && !category.equals("ALL")) {
+            System.out.println("적합하지 않ㅇ,ㅁ");
+            return new ArrayList<>(); // category가 적합하지 않으면 빈배열로 반환
         }
 
-        return diaryList;
+        List<DiaryGetResponse> diaryEntities = diaryRepository.findByIsPrivateFalse()
+                .stream()
+                .filter(diary -> diary.getCategory().name().equalsIgnoreCase(category)) // category와 일치하는 항목만 남기기
+                .sorted((diary1, diary2) -> {
+                    if ("LATEST".equals(sort)) {
+                        return diary2.getCreatedAt().compareTo(diary1.getCreatedAt()); // 최신순 정렬
+                    } else if ("QUANTITY".equals(sort)) {
+                        return Integer.compare(diary2.getContent().length(), diary1.getContent().length()); // content 길이 순 정렬
+                    }
+                    return 0; // 정렬하지 않음
+                })
+                .limit(10)
+                .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
+                .toList();
+        System.out.println(diaryEntities);
+        return diaryEntities;
     }
 
     public Diary getDiary(long id) {
