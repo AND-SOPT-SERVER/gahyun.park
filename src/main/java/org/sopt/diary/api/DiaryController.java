@@ -39,7 +39,7 @@ public class DiaryController {
 
     @GetMapping("/diary/{id}")
     ResponseEntity<Response> getDiary(@PathVariable long id, @RequestHeader("id") Long userId) {
-        Diary diary = diaryService.getDiary(id);
+        Diary diary = diaryService.getDiary(id, userId);
         return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diary.getCreatedAt()), diary.getCategory()));
     }
 

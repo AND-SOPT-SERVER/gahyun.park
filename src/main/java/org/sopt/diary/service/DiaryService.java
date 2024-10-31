@@ -64,10 +64,8 @@ public class DiaryService {
 
     public List<DiaryGetResponse> getList(String category, final String sort) {
         if (!Category.isPresent(category) && !category.equals("ALL")) {
-            System.out.println("적합하지 않ㅇ,ㅁ");
             return new ArrayList<>(); // category가 적합하지 않으면 빈배열로 반환
         }
-
         List<DiaryGetResponse> diaryEntities = diaryRepository.findByIsPrivateFalse()
                 .stream()
                 .filter(diary -> diary.getCategory().name().equalsIgnoreCase(category)) // category와 일치하는 항목만 남기기
@@ -86,22 +84,13 @@ public class DiaryService {
         return diaryEntities;
     }
 
-    public Diary getDiary(long id) {
+    public Diary getDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
         DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+        if (!diaryEntity.getUserId().equals(userId) && diaryEntity.getIsPrivate()) {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
+        }// 비공개고 일기 주인이 아니므로 응답 X
         return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.category);
     }
 
-    public List<Diary> getDiaryListByCategory(Category category) {
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findByCategory(category);
-
-        return diaryEntityList.stream()
-                .map(diaryEntity -> new Diary(
-                        diaryEntity.getId(),
-                        diaryEntity.getContent(),
-                        diaryEntity.getTitle(),
-                        diaryEntity.getCreatedAt(),
-                        diaryEntity.getCategory()
-                ))
-                .toList();
-    }
 }

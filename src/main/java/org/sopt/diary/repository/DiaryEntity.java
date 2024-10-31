@@ -78,6 +78,10 @@ public class DiaryEntity {
         this.category = category;
     }
 
+    public boolean getIsPrivate() {
+        return this.isPrivate;
+    }
+
     public void setContent(String content) {
         this.content = content;
     }
