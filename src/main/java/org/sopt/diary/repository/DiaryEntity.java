@@ -66,6 +66,14 @@ public class DiaryEntity {
         return this.category;
     }
 
+    public Long getUserId() {
+        return this.user.getId();
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     public void setContent(String content) {
         this.content = content;
     }

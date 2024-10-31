@@ -2,6 +2,7 @@ package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
 import org.sopt.diary.error.BadRequestException;
+import org.sopt.diary.error.ForBiddenException;
 import org.sopt.diary.error.UnAuthorizedError;
 import org.sopt.diary.repository.*;
 import org.sopt.diary.util.ErrorMessages;
@@ -29,20 +30,31 @@ public class DiaryService {
     }
 
 
-    public void deleteDiary(long id) {
-        userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
-        diaryRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
-        diaryRepository.deleteById(id);
-    }
-
-    // 데이터 베이스에 작업이 일어나도록 Transactional annotation 추가
-    @Transactional
-    public void updateDiary(long id, String content) {
-        userRepository.findById(id).orElseThrow(() -> new UnAuthorizedError());
+    public void deleteDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
+        System.out.println(diaryRepository.findById(id).isPresent());
         DiaryEntity diaryEntity = diaryRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
-        diaryEntity.setContent(content);
+        if (diaryEntity.getUserId() == userId) {
+            diaryRepository.deleteById(id);
+        } else {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
+        }
+
+    }
+
+    @Transactional
+    public void updateDiary(long id, String content, Category category, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedError());
+        DiaryEntity diaryEntity = diaryRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+        if (diaryEntity.getUserId() == userId) {
+            diaryEntity.setContent(content);
+            diaryEntity.setCategory(category);
+        } else {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
+        }
+
     }
 
     public List<Diary> getList() {
@@ -60,17 +72,8 @@ public class DiaryService {
     }
 
     public Diary getDiary(long id) {
-        // repository로 부터 DiaryEntity 가져옴
-        // findById 사용해도 될듯 ?
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findAll();
-
-        // DiaryEntity를 Diary로 변환해주는 작업
-        for (DiaryEntity diaryEntity : diaryEntityList) {
-            if (id == diaryEntity.getId())
-                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.getCategory());
-        }
-
-        throw new NoSuchElementException(id + " not found");
+        DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow(() -> new BadRequestException(ErrorMessages.NON_EXISTENT_DIARY));
+        return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.category);
     }
 
     public List<Diary> getDiaryListByCategory(Category category) {

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -48,26 +49,23 @@ public class DiaryController {
         return ResponseEntity.ok(new DiaryListResponse(diaryResponseList));
     }
 
-    @GetMapping("/diary")
+    @GetMapping("/diary/{id}")
     ResponseEntity<Response> getDiary(@PathVariable long id) {
-        try {
-            Diary diary = diaryService.getDiary(id);
-            return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), "2023", diary.getCategory()));
-        } catch (NoSuchElementException error) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(error.getMessage()));
-        }
+        Diary diary = diaryService.getDiary(id);
+        return ResponseEntity.ok(new DiaryDetailResponse(diary.getId(), diary.getContent(), diary.getTitle(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diary.getCreatedAt()), diary.getCategory()));
     }
 
     @DeleteMapping("/diary/{id}")
-    ResponseEntity<Response> delete(@PathVariable long id) {
-        diaryService.deleteDiary(id);
+    ResponseEntity<Response> delete(@PathVariable long id, @RequestHeader("id") Long userId) {
+        System.out.println(userId);
+        diaryService.deleteDiary(id, userId);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/diary/{id}")
-    ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryRequest diaryRequest) {
-        Validator.validContentLength(diaryRequest.content());
-        diaryService.updateDiary(id, diaryRequest.content());
+    ResponseEntity<Response> patch(@PathVariable long id, @RequestBody DiaryUpdateRequest diaryUpdateRequest, @RequestHeader("id") Long userId) {
+        Validator.validContentLength(diaryUpdateRequest.content());
+        diaryService.updateDiary(id, diaryUpdateRequest.content(), diaryUpdateRequest.category(), userId);
         return ResponseEntity.ok().build();
     }
 

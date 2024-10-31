@@ -16,7 +16,7 @@ public class UserService {
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    
+
     public final void signUp(final String loginId, final String password, final String nickname) {
         userRepository.save(new UserEntity(loginId, password, nickname));
     }
