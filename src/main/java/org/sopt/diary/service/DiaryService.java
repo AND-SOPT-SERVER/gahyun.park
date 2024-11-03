@@ -17,6 +17,8 @@ import java.util.List;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
+
+    // DiaryService에서 userRepository를 호출하고 사용하는게 의존성 관련 문제가 되지 않을지 궁금합니다
     private final UserRepository userRepository;
 
     public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository) {
@@ -24,14 +26,13 @@ public class DiaryService {
         this.userRepository = userRepository;
     }
 
-    public void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
+    public final void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
         UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedException());
         diaryRepository.save(new DiaryEntity(content, title, category, isPrivate, user));
 
     }
 
-
-    public void deleteDiary(long id, long userId) {
+    public final void deleteDiary(long id, long userId) {
         userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
         DiaryEntity diaryEntity = diaryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
