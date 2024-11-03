@@ -26,13 +26,13 @@ public class DiaryService {
         this.userRepository = userRepository;
     }
 
-    public final void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
+    public void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
         UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedException());
         diaryRepository.save(new DiaryEntity(content, title, category, isPrivate, user));
 
     }
 
-    public final void deleteDiary(long id, long userId) {
+    public void deleteDiary(long id, long userId) {
         userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
         DiaryEntity diaryEntity = diaryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
