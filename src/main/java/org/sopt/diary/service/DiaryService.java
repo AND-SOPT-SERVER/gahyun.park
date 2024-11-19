@@ -1,91 +1,120 @@
 package org.sopt.diary.service;
 
 import jakarta.transaction.Transactional;
-import org.sopt.diary.repository.DiaryEntity;
-import org.sopt.diary.repository.DiaryRepository;
-import org.springframework.dao.DuplicateKeyException;
+import org.sopt.diary.dto.DiaryGetResponse;
+import org.sopt.diary.error.ForBiddenException;
+import org.sopt.diary.error.NotFoundException;
+import org.sopt.diary.error.UnAuthorizedException;
+import org.sopt.diary.repository.*;
+import org.sopt.diary.util.ErrorMessages;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Component
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
 
-    public DiaryService(DiaryRepository diaryRepository) {
+    // DiaryService에서 userRepository를 호출하고 사용하는게 의존성 관련 문제가 되지 않을지 궁금합니다
+    private final UserRepository userRepository;
+
+    public DiaryService(DiaryRepository diaryRepository, UserRepository userRepository) {
         this.diaryRepository = diaryRepository;
+        this.userRepository = userRepository;
     }
 
-    public void createDiary(String content, String title, String category) {
-        LocalDateTime currentDate = LocalDateTime.now();
-        if (diaryRepository.findByTitle(title).isPresent())
-            throw new DuplicateKeyException("이미 존재하는 제목입니다");
+    public void createDiary(String content, String title, Category category, Boolean isPrivate, long id) {
+        UserEntity user = userRepository.findById(id).orElseThrow(() -> new UnAuthorizedException());
+        diaryRepository.save(new DiaryEntity(content, title, category, isPrivate, user));
 
-        diaryRepository.save(
-                new DiaryEntity(content, title, currentDate, category)
-        );
     }
 
-    private void checkExistingId(long id) {
-        if (!diaryRepository.existsById(id)) throw new NoSuchElementException("존재하지 않는 일기입니다");
+    public void deleteDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
+        DiaryEntity diaryEntity = diaryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
+        if (diaryEntity.getUserId() == userId) {
+            diaryRepository.deleteById(id);
+        } else {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
+        }
+
     }
 
-    public void deleteDiary(long id) {
-        checkExistingId(id);
-        diaryRepository.deleteById(id);
-    }
-
-    // 데이터 베이스에 작업이 일어나도록 Transactional annotation 추가
     @Transactional
-    public void updateDiary(long id, String content) {
-        checkExistingId(id);
-        DiaryEntity diaryEntity = diaryRepository.findById(id).get();
-        diaryEntity.setContent(content);
-    }
-
-    public List<Diary> getList() {
-        // repository로 부터 DiaryEntity 가져옴
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findTop10ByOrderByDateDesc();
-
-        // DiaryEntity를 Diary로 변환해주는 작업
-        final List<Diary> diaryList = new ArrayList<>();
-
-        for (DiaryEntity diaryEntity : diaryEntityList) {
-            diaryList.add(new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory()));
+    public void updateDiary(long id, String content, Category category, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
+        DiaryEntity diaryEntity = diaryRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
+        if (diaryEntity.getUserId() == userId) {
+            diaryEntity.setContent(content);
+            diaryEntity.setCategory(category);
+        } else {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
         }
 
-        return diaryList;
     }
 
-    public Diary getDiary(long id) {
-        // repository로 부터 DiaryEntity 가져옴
-        // findById 사용해도 될듯 ?
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findAll();
-
-        // DiaryEntity를 Diary로 변환해주는 작업
-        for (DiaryEntity diaryEntity : diaryEntityList) {
-            if (id == diaryEntity.getId())
-                return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getDate(), diaryEntity.getCategory());
+    public List<DiaryGetResponse> getList(final String category, final String sort) {
+        if (!Category.isPresent(category) && !category.equals("ALL")) {
+            return new ArrayList<>(); // category가 적합하지 않으면 빈배열로 반환
         }
-
-        throw new NoSuchElementException(id + " not found");
-    }
-
-    public List<Diary> getDiaryListByCategory(String category) {
-        final List<DiaryEntity> diaryEntityList = diaryRepository.findByCategory(category);
-
-        return diaryEntityList.stream()
-                .map(diaryEntity -> new Diary(
-                        diaryEntity.getId(),
-                        diaryEntity.getContent(),
-                        diaryEntity.getTitle(),
-                        diaryEntity.getDate(),
-                        diaryEntity.getCategory()
-                ))
+        if (category.equals("ALL")) return diaryRepository.findByIsPrivateFalse()
+                .stream()
+                .sorted((diary1, diary2) -> sortDiary(diary1, diary2, sort))
+                .limit(10)
+                .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
+                .toList();
+        return diaryRepository.findByIsPrivateFalse()
+                .stream()
+                .filter(diary -> diary.getCategory().name().equalsIgnoreCase(category)) // category와 일치하는 항목만 남기기
+                .sorted((diary1, diary2) -> sortDiary(diary1, diary2, sort))
+                .limit(10)
+                .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
                 .toList();
     }
+
+    public List<DiaryGetResponse> getMyList(final String category, final String sort, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
+        if (!Category.isPresent(category) && !category.equals("ALL")) {
+            return new ArrayList<>();
+        }
+        if (category.equals("ALL")) {
+            return diaryRepository.findByUser_Id(userId)
+                    .stream()
+                    .sorted((diary1, diary2) -> sortDiary(diary1, diary2, sort))
+                    .limit(10)
+                    .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
+                    .toList();
+        }
+        return diaryRepository.findByUser_Id(userId)
+                .stream()
+                .filter(diary -> diary.getCategory().name().equalsIgnoreCase(category))
+                .sorted((diary1, diary2) -> sortDiary(diary1, diary2, sort))
+                .limit(10)
+                .map(diaryEntity -> new DiaryGetResponse(diaryEntity.getId(), diaryEntity.getTitle(), diaryEntity.getUserNickname(), new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(diaryEntity.getCreatedAt())))
+                .toList();
+    }
+
+    public Diary getDiary(long id, long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new UnAuthorizedException());
+        DiaryEntity diaryEntity = diaryRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorMessages.NON_EXISTENT_DIARY));
+        if (!diaryEntity.getUserId().equals(userId) && diaryEntity.getIsPrivate()) {
+            throw new ForBiddenException(ErrorMessages.FORBIDDEN_ERROR);
+        }// 비공개고 일기 주인이 아니므로 응답 X
+        return new Diary(diaryEntity.getId(), diaryEntity.getContent(), diaryEntity.getTitle(), diaryEntity.getCreatedAt(), diaryEntity.category);
+    }
+
+    private int sortDiary(DiaryEntity diary1, DiaryEntity diary2, String sort) {
+        if ("LATEST".equals(sort)) {
+            return diary2.getCreatedAt().compareTo(diary1.getCreatedAt());
+        } else if ("QUANTITY".equals(sort)) {
+            return Integer.compare(diary2.getContent().length(), diary1.getContent().length());
+        }
+        return 0;
+    }
+
 }
